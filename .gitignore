@@ -1,0 +1,5 @@
+.env
+package-lock.json
+./middleware
+./utils
+node_modules
