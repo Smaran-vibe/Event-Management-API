@@ -13,7 +13,7 @@ const getAllEvents = async () => {
 };
 
 const getEventById = async (eventId) => {
-    const event = await Event.findById(eventId);
+    const events = await Event.find().populate("createdBy", "name email");
 
     return event;
 };
