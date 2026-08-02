@@ -29,11 +29,19 @@ const eventSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 1
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
         }
     },
     {
         timestamps: true
     }
+
+
+
 );
 
 const Event = mongoose.model("Event", eventSchema);
