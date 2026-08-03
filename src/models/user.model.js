@@ -53,46 +53,35 @@ const userSchema = new mongoose.Schema(
     },
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
     if (!this.isModified("password")) {
-        return next();
+        return;
     }
 
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-
-        next();
-    } catch (error) {
-        next(error);
-    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
-userSchema.pre(/^findOneAndUpdate/, async function (next) {
+userSchema.pre(/^findOneAndUpdate/, async function () {
     const update = this.getUpdate() || {};
     const password = update.password || update.$set?.password;
 
     if (!password) {
-        return next();
+        return;
     }
 
-    try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-        if (update.password) {
-            update.password = hashedPassword;
-        }
-
-        if (update.$set?.password) {
-            update.$set.password = hashedPassword;
-        }
-
-        this.setUpdate(update);
-        next();
-    } catch (error) {
-        next(error);
+    if (update.password) {
+        update.password = hashedPassword;
     }
+
+    if (update.$set?.password) {
+        update.$set.password = hashedPassword;
+    }
+
+    this.setUpdate(update);
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
@@ -113,7 +102,7 @@ userSchema.methods.generateAccessToken = function () {
         },
         process.env.JWT_ACCESS_SECRET,
         {
-            expiresIn: process.env.JWT_ACCESS_EXPIRE || "15m",
+            expiresIn: process.env.JWT_ACCESS_EXPIRE || "1d",
         }
     );
 
