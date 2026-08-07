@@ -2,9 +2,16 @@ const eventService = require("../services/event.service");
 
 const createEvent = async (req, res) => {
     try {
+        console.log("req.user =", req.user);
+        console.log("req.body =", req.body);
+        console.log("req.file =", req.file);
+
         const eventData = {
             ...req.body,
-            createdBy: req.user.id
+            createdBy: req.user._id,
+            image: req.file
+                ? `/uploads/events/${req.file.filename}`
+                : null
         };
 
         const event = await eventService.createEvent(eventData);
@@ -73,16 +80,23 @@ const updateEvent = async (req, res) => {
             });
         }
 
-        if (existingEvent.createdBy.toString() !== req.user.id) {
+        if (existingEvent.createdBy.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized to update this event."
             });
         }
+        const updateData = {
+            ...req.body
+        };
+
+        if (req.file) {
+            updateData.image = `/uploads/events/${req.file.filename}`;
+        }
 
         const event = await eventService.updateEvent(
             req.params.id,
-            req.body
+            updateData
         );
 
         res.status(200).json({
@@ -113,7 +127,7 @@ const deleteEvent = async (req, res) => {
             });
         }
 
-        if (existingEvent.createdBy.toString() !== req.user.id) {
+        if (existingEvent.createdBy.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized to delete this event."
